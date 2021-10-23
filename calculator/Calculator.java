@@ -1,5 +1,7 @@
 package calculator;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,22 +29,34 @@ public class Calculator {
     };
 
     private String formatAnswer(double answer) {
+        NumberFormat numberFormat = new DecimalFormat("##.###");
+
         if (Double.isNaN(answer))
             return "Nan";
         else if (Double.isInfinite(answer))
             return "Infinity";
         else
-            return Double.toString(answer);
+            return numberFormat.format(answer);
     }
 
-    public String calculate(String expression) throws CalculatorException {
+    public String calculate(String expression) {
         double answer;
         String formatedAnswer;
         String[] elements;
+
+        if (expression.isBlank() || expression.isEmpty())
+            return "Expression is empty";
+
         elements = separateExpression(expression);
-        validateExpressionSyntax(elements);
-        transformInfixToPostfix(elements);
-        answer = calculatePostfix();
+
+        try {
+            validateExpressionSyntax(elements);
+            transformInfixToPostfix(elements);
+            answer = calculatePostfix();
+        } catch (CalculatorException e) {
+            return e.getMessage();
+        }
+
         formatedAnswer = formatAnswer(answer);
         return formatedAnswer;
     }
@@ -82,20 +96,20 @@ public class Calculator {
     }
 
     private boolean validOperationOrder(State current, State next) {
-        boolean invalidOperationOrder = false;
+        boolean validOperationOrder = true;
 
         if (current == State.START && (isMathOperator(next) || next == State.RIGHT_PARENTHESIS))
-            invalidOperationOrder = true;
+            validOperationOrder = false;
         else if (current == State.NUMBER && (next == State.NUMBER || next == State.LEFT_PARENTHESIS))
-            invalidOperationOrder = true;
+            validOperationOrder = false;
         else if (isMathOperator(current) && (isMathOperator(next) || next == State.RIGHT_PARENTHESIS))
-            invalidOperationOrder = true;
+            validOperationOrder = false;
         else if (current == State.NEGATIVE_SIGN && (isMathOperator(next) || next == State.RIGHT_PARENTHESIS))
-            invalidOperationOrder = true;
+            validOperationOrder = false;
         else if (current == State.LEFT_PARENTHESIS && (isMathOperator(next) || next == State.RIGHT_PARENTHESIS))
-            invalidOperationOrder = true;
+            validOperationOrder = false;
 
-        return invalidOperationOrder;
+        return validOperationOrder;
     }
 
     private void validateExpressionSyntax(String[] elements) throws CalculatorException {
@@ -120,7 +134,7 @@ public class Calculator {
         }
 
         if (countParenthesis != 0)
-            throw new CalculatorException("Number of parenthesis incorrect");
+            throw new CalculatorException("Invalid parenthesis");
     }
 
     private State getState(String str) throws CalculatorException {
@@ -214,7 +228,7 @@ public class Calculator {
                 postfix.add(elements[i]);
             else if (state == State.LEFT_PARENTHESIS)
                 operationStack.push(elements[i]);
-            else if (isMathOperator(state))
+            else if (isMathOperator(state) || state == State.NEGATIVE_SIGN)
                 transformMathOperator(elements[i]);
             else if (state == State.RIGHT_PARENTHESIS)
                 transformRightParenthesis();
@@ -222,8 +236,8 @@ public class Calculator {
     }
 
     private void calculateMathOperator(State state, String element) throws CalculatorException {
-        double number1 = numStack.pop();
         double number2 = numStack.pop();
+        double number1 = numStack.pop();
 
         if (state == State.ADD_SUBTRACT && element.equals("+"))
             numStack.push(add(number1, number2));
@@ -232,7 +246,7 @@ public class Calculator {
         else if (state == State.MULTIPLY_DIVIDE && element.equals("*"))
             numStack.push(multiply(number1, number2));
         else if (state == State.MULTIPLY_DIVIDE && element.equals("/"))
-            numStack.push(divide(number2, number1));
+            numStack.push(divide(number1, number2));
     }
 
     private double calculatePostfix() throws CalculatorException {
@@ -255,5 +269,4 @@ public class Calculator {
         answer = numStack.pop();
         return answer;
     }
-
 }

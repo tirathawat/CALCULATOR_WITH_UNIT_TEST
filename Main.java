@@ -1,7 +1,6 @@
 import java.util.Scanner;
 
 import calculator.Calculator;
-import calculator.CalculatorException;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,11 +8,7 @@ public class Main {
         String str;
         str = scanner.nextLine();
         Calculator calculator = new Calculator();
-        try {
-            System.out.println(calculator.calculate(str));
-        } catch (CalculatorException e) {
-            System.out.println(e.getMessage());
-        }
+        System.out.println(calculator.calculate(str));
         scanner.close();
     }
 }
