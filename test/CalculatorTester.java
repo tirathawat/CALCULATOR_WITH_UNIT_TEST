@@ -82,7 +82,7 @@ public class CalculatorTester {
         answer = calculator.calculate("3    /    3  * 4  +1  -1");
         assertEquals("4", answer);
 
-        answer = calculator.calculate("         2");
+        answer = calculator.calculate("2");
         assertEquals("2", answer);
 
         answer = calculator.calculate("         2          ");
