@@ -115,14 +115,12 @@ public class Calculator {
             if (countParenthesis < 0)
                 throw new CalculatorException("Invalid parenthesis");
 
-            if (!validOperationOrder(current, next)) {
+            if (!validOperationOrder(current, next))
                 throw new CalculatorException("Invalid operation order");
-            }
         }
 
-        if (countParenthesis != 0) {
+        if (countParenthesis != 0)
             throw new CalculatorException("Number of parenthesis incorrect");
-        }
     }
 
     private State getState(String str) throws CalculatorException {
